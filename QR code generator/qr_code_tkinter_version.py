@@ -1,7 +1,19 @@
+import re
 import tkinter as tk
 from tkinter.filedialog import asksaveasfilename
 import qrcode
 from PIL import Image, ImageColor
+
+def url_check(url):
+    regex = re.compile(
+            r'^(?:http|ftp)s?://'
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
+            r'localhost|'
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'
+            r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'
+            r'(?::\d+)?'
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return re.match(regex, url) is not None        
 
 generated_img = None
 
@@ -12,6 +24,10 @@ def creation():
     back_color = ent_back_color.get()
 
     try: 
+        if not url_check(website_link):
+            lbl_create.config(text="Invalid website link")
+            raise ValueError("Invalid website link")
+        
         qr_color_choice = ImageColor.getcolor(qr_color, "RGB")
         back_color_choice = ImageColor.getcolor(back_color, "RGB")
 
@@ -21,8 +37,8 @@ def creation():
 
         generated_img = qr.make_image(fill_color = qr_color_choice, back_color = back_color_choice)
         lbl_create.config(text="QR Code generated. Please click save")
-    except ValueError:
-        lbl_create.config(text="Incorrect website link or colour input")
+    except ValueError as e:
+        lbl_create.config(text=f"Error: {e}")
         generated_img = None
         
     return generated_img
